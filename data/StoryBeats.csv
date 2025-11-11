@@ -1,4 +1,4 @@
-BeatNum,Stage,BeatName,BeatStartStep (editable),ZoneLevel,BeatDC
+BeatNum,Stage,BeatName,BeatStartStep,ZoneLevel,BeatDC
 1,Ordinary World,Village Under the Ancient Hill,1,60,10
 2,Call to Adventure,The Omen at the Skyfall Stone,15,70,10
 3,Mentor,The Wanderer at the Bridge,30,85,10

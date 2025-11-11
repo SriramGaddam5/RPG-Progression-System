@@ -1,6 +1,16 @@
 import parser
 
 
+class World(parser.CSVRow):
+    BeatNum: int = 0
+    Stage: str = ""
+    BeatName: str = ""
+    BeatStartStep: int = 0
+    ZoneLevel: int = 0
+    BeatDC: int = 0
+    ZoneTier: int = 1
+
+
 class Loot(parser.CSVRow):
     ItemID: int
     Slot: str
@@ -55,7 +65,7 @@ class Player:
     def __init__(self):
         self._progression = parser.read_csv("data/Progression.csv", Progression)
 
-    def get_exp(self, amount: int):
+    def award_exp(self, amount: int):
         self._exp += amount
 
         for p in self._progression:
@@ -64,19 +74,33 @@ class Player:
                     self.level += 1
                     self._exp -= p.XP_to_Next
 
-    def get_loot(self, loot: Loot):
+    def award_gold(self, amount: int):
+        self.gold += amount
+
+    def award_loot(self, loot: Loot):
         self._loot.append(loot)
         self.equipment.equip_best(self._loot)
 
+    def culumative_exp(self) -> int:
+        total = self._exp
 
-class Inputs:
-    combat_chance: float
+        for p in self._progression:
+            if p.Level < self.level:
+                total += p.XP_to_Next
+
+        return total
 
 
-class World:
-    BeatNum: int
-    Stage: str
-    BeatName: str
-    BeatStartStep: int
-    ZoneLevel: int
-    BeatDC: int
+class Statistics:
+    Success: bool = False
+    Death: bool = False
+    XP_Earned: int = 0
+    Gold_Earned: int = 0
+    DropID: int = 0
+    Gold_Spent: int = 0
+
+    Power_Ratio: float = 0
+    SuccessChanceCombat: float = 0
+    DeathChance: float = 0
+    StatScore: float = 0
+    SuccessChance_NonCombat: float = 0

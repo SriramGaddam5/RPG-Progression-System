@@ -1,10 +1,6 @@
 {
     "Parameters": {
-        "MaxLevel": 20,
-        "BaseXPPerLevel": 100,
         "XPExponent": 1.35,
-        "GoldPerCombatStep": 25,
-        "GoldPerNonCombatStep": 10,
         "CombatChance": 0.6,
         "DeathChance": 0.08,
         "RepairCostPct": 0.05,
@@ -95,23 +91,5 @@
         "Epic": 1.0,
         "Legendary": 0.9,
         "Zone": 0.6
-    },
-    "PerQualityStats": {
-        "Common": {
-            "AvgPower": 19.914285714285715,
-            "AvgSellValue": 21.2
-        },
-        "Rare": {
-            "AvgPower": 39.74285714285714,
-            "AvgSellValue": 44.31428571428572
-        },
-        "Epic": {
-            "AvgPower": 64.94285714285714,
-            "AvgSellValue": 71.02857142857142
-        },
-        "Legendary": {
-            "AvgPower": 89.68571428571428,
-            "AvgSellValue": 95.2
-        }
     }
 }

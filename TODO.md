@@ -1,0 +1,2 @@
+-   make tiers a part of the zone
+    -   right now zone tier is incorrectly a part of inputs.csv
