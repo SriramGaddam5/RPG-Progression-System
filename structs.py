@@ -11,6 +11,24 @@ class World(parser.CSVRow):
     ZoneTier: int = 1
 
 
+class NonCombat(parser.CSVRow):
+    Category: str = ""
+    T1: float = 0.0
+    T2: float = 0.0
+    T3: float = 0.0
+    T4: float = 0.0
+    T1Threshold: float = 0.0
+    T2Threshold: float = 0.0
+    T3Threshold: float = 0.0
+    T4Threshold: float = 0.0
+    BaseXPMult: float = 1.0
+    GoldMult: float = 1.0
+    RepDeltaOnSuccess: float = 0.0
+    RepDeltaOnFail: float = 0.0
+    TimeMult: float = 1.0
+    FailRisk: float = 0.0
+
+
 class Stats(parser.CSVRow):
     StatKey: str = ""
     Base: int = 0

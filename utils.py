@@ -7,7 +7,7 @@ import inputs
 
 _nc_categories = parser.read_csv("data/NC_Categories.csv", structs.NCCategory)
 # _nc_rules ?
-# _non_combat ?
+_non_combat = parser.read_csv("data/NonCombat.csv", structs.NonCombat)
 
 
 def chance(percent: float) -> bool:
@@ -21,7 +21,7 @@ def logistic(x: float, *, L: float = 1.0, k: float = 1.0, x0: float = 0.0) -> fl
 def skill_check(
     ratio: float,
     DC: float,
-    steepness: float = 1.0,  # TODO read from inputs
+    steepness: float = 1.0,
 ) -> tuple[bool, float]:
     """
     Determine success probability based on ratio vs. DC using a logistic curve. When ratio == DC, then there is a 50% chance of success.
@@ -107,7 +107,35 @@ def death_chance(player: structs.Player, world: structs.World) -> float:
     return (1 - combat_chance(player, world)) * inputs.DEATH_SEVERITY
 
 
-def non_combat_category() -> structs.NCCategory:
-    # TODO properly decide category using NonCombat.csv
-    index = math.floor(random.random() * 5)
-    return _nc_categories[index]
+def non_combat_category(world: structs.World) -> structs.NCCategory:
+    rand = random.random()
+
+    scenario = _non_combat[0]
+    for s in _non_combat:
+        thresh = 0
+        if world.ZoneTier == 1:
+            thresh = s.T1Threshold
+        elif world.ZoneTier == 2:
+            thresh = s.T2Threshold
+        elif world.ZoneTier == 3:
+            thresh = s.T3Threshold
+        elif world.ZoneTier == 4:
+            thresh = s.T4Threshold
+        if rand <= thresh:
+            scenario = s
+            break
+
+    category = _nc_categories[0]
+    for cat in _nc_categories:
+        if cat.OutcomeCategory == scenario.Category:
+            category = cat
+
+    return category
+
+
+def skill_difficulty(player: structs.Player, world: structs.World) -> float:
+    skill_noise = math.sqrt(-2 * math.log(random.random())) * math.cos(
+        2 * math.pi * random.random()
+    )
+    skill_difficulty = inputs.SKILL_DIFF_TIER_MULT + world.ZoneTier * skill_noise
+    return skill_difficulty

@@ -4,6 +4,7 @@ import loot
 import log
 import utils
 import inputs
+import math
 
 
 def combat(
@@ -23,11 +24,13 @@ def combat(
         stats.Death = death
 
         if not death:
-            exp = 10  # TODO calculate exp
+            exp = math.floor(
+                utils.skill_difficulty(player, world) * inputs.BASE_XP_COMBAT
+            )
             player.award_exp(exp)
             stats.XP_Earned = exp
 
-            gold = 1  # TODO calculate gold
+            gold = inputs.GOLD_PER_COMBAT_STEP
             player.award_gold(gold)
             stats.Gold_Earned = gold
 
@@ -42,7 +45,7 @@ def non_combat(
     world: structs.World,
     stats: structs.Statistics,
 ):
-    category = utils.non_combat_category()
+    category = utils.non_combat_category(world)
     stats.OutcomeCategory = category.OutcomeCategory
     stats.SkillDifficulty = category.CategoryDC
 
@@ -56,21 +59,15 @@ def non_combat(
     stats.SuccessChance_NonCombat = chance
     stats.Success = success
 
-    # TODO calculate exp
-    # TODO calculate gold
-    if success:
-        # nc_rules.csv
-        exp = 10
-        gold = 1
-    else:
-        exp = 10
-        gold = 0
-
+    exp = math.floor(utils.skill_difficulty(player, world) * inputs.BASE_XP_NON_COMBAT)
     player.award_exp(exp)
     stats.XP_Earned = exp
 
-    player.award_gold(gold)
-    stats.Gold_Earned = gold
+    if success:
+        # maybe use nc_rules.csv
+        gold = inputs.GOLD_PER_NON_COMBAT_STEP
+        player.award_gold(gold)
+        stats.Gold_Earned = gold
 
 
 def simulate(turns: int):
