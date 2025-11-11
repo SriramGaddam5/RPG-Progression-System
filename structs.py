@@ -32,7 +32,7 @@ class NonCombat(parser.CSVRow):
 class Stats(parser.CSVRow):
     StatKey: str = ""
     Base: int = 0
-    PerLevel: int = 0
+    PerLevel: float = 0
 
 
 class Loot(parser.CSVRow):
@@ -89,7 +89,7 @@ class Player:
 
     def __init__(self):
         self._progression = parser.read_csv("data/Progression.csv", Progression)
-        self._stats = parser.read_csv("data/Progression.csv", Stats)
+        self._stats = parser.read_csv("data/Stats.csv", Stats)
 
     def award_exp(self, amount: int):
         self._exp += amount
@@ -147,4 +147,4 @@ class Statistics:
     CatStatKey: str = ""
     CategoryDC: int = 0
     BaseStat: int = 0
-    PerLevel: int = 0
+    PerLevel: float = 0
