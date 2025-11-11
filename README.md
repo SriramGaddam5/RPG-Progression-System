@@ -1,7 +1,6 @@
 # RPG Progression System
 
 ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-active-success)
 
 A Python-based simulation system for modeling and balancing RPG progression mechanics, including combat, loot, experience, and story progression.
@@ -150,17 +149,28 @@ Generate visual graphs of the progression system:
 python curve.py
 ```
 
-This will create two PNG files:
+This will create three PNG files:
+
+**Simulation Results (from output.csv):**
+
+- **`simulation_results.png`**: Actual gameplay data from your last simulation run
+  - Player level progression over time
+  - Player ability (gear score) vs challenge difficulty (zone level)
+  - Gold accumulation over time
+  - Power ratio and success rate tracking
+
+**Theoretical Curves (from Curve.csv & Progression.csv):**
 
 - **`success_curves.png`**: Success chance curves for combat and non-combat encounters vs power delta
 - **`xp_progression.png`**: XP requirements, cumulative XP, growth rates, and gold rewards by level
 
 The visualizations help understand:
 
-- How success rates scale with player power relative to zone difficulty
-- The difference in difficulty between combat and non-combat encounters
-- XP progression pacing and level-up rates
-- Economy balance across levels
+- **Player progression pacing**: How quickly players level up and gain power
+- **Challenge balance**: Whether players are ahead or behind the zone difficulty
+- **Economy flow**: Gold accumulation rate and resource availability
+- **Success rates**: How player power translates to encounter success chances
+- **Difficulty scaling**: How the game maintains challenge as players progress
 
 ### Configuration Files
 
@@ -391,6 +401,37 @@ Test validation and regression testing results to ensure simulation consistency 
 
 ## Understanding the Visualizations
 
+### Simulation Results
+
+The simulation results visualization shows actual gameplay data from your simulation run, with four key graphs:
+
+**1. Player Level Progression Over Time**
+
+- Shows how quickly the player levels up through the simulation
+- Helps identify if XP pacing is too fast or too slow
+- Level plateaus indicate where more XP is required
+
+**2. Player Ability vs Challenge Difficulty**
+
+- Green shading: Player gear score is above zone difficulty (player ahead)
+- Red shading: Player gear score is below zone difficulty (player behind)
+- The gap between lines shows the power difference
+- Ideal balance keeps players slightly ahead but not overwhelming
+
+**3. Gold Accumulation Over Time**
+
+- Shows economic growth throughout the simulation
+- Steep slopes indicate periods of high gold income
+- Flat sections may indicate deaths or high expenses
+- Helps balance reward rates and gold sinks
+
+**4. Power Ratio & Success Rate Over Time**
+
+- Purple line: Power ratio (positive = player advantage, negative = disadvantage)
+- Orange line: Success chance percentage
+- Shows how power differences translate to success probability
+- Helps identify if encounters are too easy or too difficult
+
 ### Success Curves
 
 The success curves visualization shows how encounter difficulty changes based on the power difference between player and zone:
@@ -438,9 +479,13 @@ The XP progression visualization includes four key metrics:
 1. **Initial Setup**: Configure your progression parameters in `data/Inputs.json`
 2. **Run Simulation**: Execute `python main.py` to generate baseline data
 3. **Visualize**: Run `python curve.py` to see current balance state
-4. **Analyze**: Review `Simulator.csv` and generated graphs for issues
-5. **Adjust**: Modify parameters in configuration files
-6. **Re-test**: Run simulation again and compare results
+4. **Analyze**: Review generated graphs for issues:
+   - Check `simulation_results.png` for actual gameplay balance
+   - Look for player getting too far ahead/behind in ability vs difficulty graph
+   - Verify gold accumulation rate is reasonable
+   - Ensure success rates stay in acceptable range (not too easy/hard)
+5. **Adjust**: Modify parameters in configuration files based on findings
+6. **Re-test**: Run simulation again and compare new graphs to previous run
 7. **Validate**: Check `REGRESSION.csv` to ensure changes don't break intended behavior
 
 ### Testing a New XP Curve
@@ -480,10 +525,6 @@ python main.py && python curve.py
 ## Contributing
 
 This is a personal project for RPG progression system design and testing. Feel free to fork and adapt for your own game projects.
-
-## License
-
-MIT License - Feel free to use this system for your game development projects.
 
 ## Acknowledgments
 

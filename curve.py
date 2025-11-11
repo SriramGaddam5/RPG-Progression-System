@@ -3,6 +3,55 @@ import csv
 from pathlib import Path
 
 
+def load_simulation_data():
+    """Load simulation output data from output.csv"""
+    output_file = Path("data") / "output.csv"
+    
+    if not output_file.exists():
+        print(f"Error: {output_file} not found. Please run 'python main.py' first.")
+        return None
+    
+    steps = []
+    player_levels = []
+    zone_levels = []
+    gear_scores = []
+    cumulative_gold = []
+    cumulative_xp = []
+    power_ratios = []
+    success_chances = []
+    
+    with open(output_file, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            try:
+                steps.append(int(row['Step']))
+                player_levels.append(int(row['PlayerLevel']))
+                zone_levels.append(int(row['ZoneLevel']))
+                gear_scores.append(int(row['GearScore']))
+                cumulative_gold.append(int(row['CumulativeGold']))
+                cumulative_xp.append(int(row['CumulativeXP']))
+                power_ratios.append(float(row['PowerRatio']))
+                
+                # Get success chance (prioritize combat, fallback to non-combat)
+                success = float(row.get('SuccessChanceCombat', 0))
+                if success == 0:
+                    success = float(row.get('SuccessChance_NonCombat', 0))
+                success_chances.append(success)
+            except (ValueError, KeyError) as e:
+                continue
+    
+    return {
+        'steps': steps,
+        'player_levels': player_levels,
+        'zone_levels': zone_levels,
+        'gear_scores': gear_scores,
+        'cumulative_gold': cumulative_gold,
+        'cumulative_xp': cumulative_xp,
+        'power_ratios': power_ratios,
+        'success_chances': success_chances
+    }
+
+
 def load_curve_data():
     """Load success chance curves from Curve.csv"""
     curve_file = Path("data") / "Curve.csv"
@@ -164,16 +213,120 @@ def plot_xp_progression():
     plt.show()
 
 
+def plot_simulation_results():
+    """Plot simulation results from output.csv"""
+    data = load_simulation_data()
+    
+    if data is None:
+        return
+    
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
+    
+    # Plot 1: Player Level vs Steps
+    ax1.plot(data['steps'], data['player_levels'], 'o-', color='darkblue', 
+             linewidth=2, markersize=4, label='Player Level')
+    ax1.fill_between(data['steps'], 0, data['player_levels'], alpha=0.3, color='skyblue')
+    ax1.set_xlabel('Step', fontsize=11, fontweight='bold')
+    ax1.set_ylabel('Player Level', fontsize=11, fontweight='bold')
+    ax1.set_title('Player Level Progression Over Time', fontsize=13, fontweight='bold')
+    ax1.grid(True, alpha=0.3, linestyle='--')
+    ax1.legend(loc='best', fontsize=9)
+    
+    # Add level milestones
+    unique_levels = sorted(set(data['player_levels']))
+    if len(unique_levels) > 1:
+        for level in unique_levels[1::2]:  # Every other level
+            level_step = next((s for s, l in zip(data['steps'], data['player_levels']) if l == level), None)
+            if level_step:
+                ax1.axhline(y=level, color='gray', linestyle=':', alpha=0.3, linewidth=0.8)
+    
+    # Plot 2: Player Ability (Gear Score) vs Challenge Difficulty (Zone Level)
+    ax2.plot(data['steps'], data['gear_scores'], 's-', color='green', 
+             linewidth=2, markersize=3, label='Player Gear Score', alpha=0.8)
+    ax2.plot(data['steps'], data['zone_levels'], '^-', color='red', 
+             linewidth=2, markersize=3, label='Zone Difficulty', alpha=0.8)
+    ax2.fill_between(data['steps'], data['gear_scores'], data['zone_levels'], 
+                     where=[gs >= zl for gs, zl in zip(data['gear_scores'], data['zone_levels'])],
+                     alpha=0.2, color='green', label='Player Ahead')
+    ax2.fill_between(data['steps'], data['gear_scores'], data['zone_levels'],
+                     where=[gs < zl for gs, zl in zip(data['gear_scores'], data['zone_levels'])],
+                     alpha=0.2, color='red', label='Behind Zone')
+    ax2.set_xlabel('Step', fontsize=11, fontweight='bold')
+    ax2.set_ylabel('Power Level', fontsize=11, fontweight='bold')
+    ax2.set_title('Player Ability vs Challenge Difficulty', fontsize=13, fontweight='bold')
+    ax2.grid(True, alpha=0.3, linestyle='--')
+    ax2.legend(loc='best', fontsize=9)
+    
+    # Plot 3: Gold vs Steps
+    ax3.plot(data['steps'], data['cumulative_gold'], 'o-', color='goldenrod', 
+             linewidth=2.5, markersize=3)
+    ax3.fill_between(data['steps'], 0, data['cumulative_gold'], alpha=0.3, color='gold')
+    ax3.set_xlabel('Step', fontsize=11, fontweight='bold')
+    ax3.set_ylabel('Cumulative Gold', fontsize=11, fontweight='bold')
+    ax3.set_title('Gold Accumulation Over Time', fontsize=13, fontweight='bold')
+    ax3.grid(True, alpha=0.3, linestyle='--')
+    
+    # Add annotations for gold milestones
+    if len(data['cumulative_gold']) > 0:
+        max_gold = max(data['cumulative_gold'])
+        max_step = data['steps'][data['cumulative_gold'].index(max_gold)]
+        ax3.annotate(f'Max: {max_gold:,}g', 
+                    xy=(max_step, max_gold),
+                    xytext=(max_step * 0.7, max_gold * 0.85),
+                    fontsize=9, fontweight='bold',
+                    bbox=dict(boxstyle='round,pad=0.5', facecolor='yellow', alpha=0.7),
+                    arrowprops=dict(arrowstyle='->', lw=1.5))
+    
+    # Plot 4: Power Ratio and Success Chance
+    ax4_twin = ax4.twinx()
+    
+    line1 = ax4.plot(data['steps'], data['power_ratios'], 'o-', color='purple', 
+                     linewidth=2, markersize=3, label='Power Ratio', alpha=0.7)
+    ax4.axhline(y=0, color='black', linestyle='-', linewidth=1.5, alpha=0.5)
+    ax4.fill_between(data['steps'], 0, data['power_ratios'],
+                     where=[pr > 0 for pr in data['power_ratios']],
+                     alpha=0.2, color='green', label='Advantage')
+    ax4.fill_between(data['steps'], 0, data['power_ratios'],
+                     where=[pr < 0 for pr in data['power_ratios']],
+                     alpha=0.2, color='red', label='Disadvantage')
+    
+    line2 = ax4_twin.plot(data['steps'], [s * 100 for s in data['success_chances']], 
+                          'd-', color='orange', linewidth=2, markersize=3, 
+                          label='Success Rate', alpha=0.7)
+    
+    ax4.set_xlabel('Step', fontsize=11, fontweight='bold')
+    ax4.set_ylabel('Power Ratio (Player/Zone)', fontsize=10, fontweight='bold', color='purple')
+    ax4_twin.set_ylabel('Success Chance (%)', fontsize=10, fontweight='bold', color='orange')
+    ax4.set_title('Power Ratio & Success Rate Over Time', fontsize=13, fontweight='bold')
+    ax4.grid(True, alpha=0.3, linestyle='--')
+    ax4.tick_params(axis='y', labelcolor='purple')
+    ax4_twin.tick_params(axis='y', labelcolor='orange')
+    
+    # Combine legends
+    lines = line1 + line2
+    labels = [l.get_label() for l in lines]
+    ax4.legend(lines, labels, loc='upper left', fontsize=9)
+    
+    plt.tight_layout()
+    plt.savefig('simulation_results.png', dpi=300, bbox_inches='tight')
+    print("[OK] Saved: simulation_results.png")
+    plt.show()
+
+
 def plot_all():
     """Generate all progression curve visualizations"""
     print("\n" + "="*50)
     print("  RPG PROGRESSION SYSTEM - CURVE VISUALIZATION")
     print("="*50 + "\n")
     
-    print("Generating success curve graphs...")
+    # Plot simulation results from output.csv
+    print("Generating simulation result graphs...")
+    plot_simulation_results()
+    
+    print("\nGenerating theoretical success curve graphs...")
     plot_success_curves()
     
-    print("\nGenerating XP progression graphs...")
+    print("\nGenerating theoretical XP progression graphs...")
     plot_xp_progression()
     
     print("\n" + "="*50)

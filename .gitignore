@@ -5,6 +5,7 @@ data/debug.csv
 # Generated visualizations
 success_curves.png
 xp_progression.png
+simulation_results.png
 *.png
 
 # Byte-compiled / optimized / DLL files
