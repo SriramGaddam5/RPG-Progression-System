@@ -5,6 +5,7 @@ import log
 import utils
 import inputs
 import math
+from curve import plot_all
 
 
 def combat(
@@ -12,8 +13,7 @@ def combat(
     world: structs.World,
     stats: structs.Statistics,
 ):
-    chance = utils.combat_chance(player, world)
-    success = utils.skill_check(utils.power_ratio(player, world), world.BeatDC / 20)
+    success, chance = utils.skill_check(utils.power_ratio(player, world), world.BeatDC / 20)
     stats.SuccessChanceCombat = chance
     stats.Success = success
 
@@ -88,3 +88,6 @@ def simulate(turns: int):
 
         # record results
         log.record_turn(turn, player, world, stats)
+    
+    # plot all results
+    plot_all()
